@@ -30,6 +30,20 @@ buildGoModule rec {
     "-X ${package_url}/internal/version.commit=${src.rev}"
   ];
 
+  doCheck = true;
+  checkFlags = let
+    skippedTests = [
+      "TestResolve"
+      "TestLatestVersion"
+    ];
+  in ["-skip" (lib.concatStringsSep "|" skippedTests)];
+
+  checkPhase = ''
+    runHook preCheck
+    go test ./... ${lib.concatStringsSep " " checkFlags}
+    runHook postCheck
+  '';
+
   doInstallCheck = true;
   installCheckPhase = ''
     $out/bin/ratchet --version 2>&1 | grep ${version};
