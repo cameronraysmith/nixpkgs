@@ -2,7 +2,7 @@
   lib,
   buildGoModule,
   fetchFromGitHub,
-  nixosTests,
+  callPackage,
 }:
 buildGoModule rec {
   pname = "ratchet";
@@ -46,7 +46,7 @@ buildGoModule rec {
   '';
 
   passthru.tests = {
-    ratchet = nixosTests.ratchet;
+    execution = callPackage ./tests.nix {};
   };
 
   meta = with lib; {
