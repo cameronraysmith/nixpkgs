@@ -38,6 +38,9 @@ buildGoModule rec {
     kustomize
   ];
 
+  # vendored modernc.org/libc tries to read /etc/protocols during initialization
+  doCheck = false;
+
   passthru.tests.version = testers.testVersion {
     package = holos;
     command = "holos --version || true";
