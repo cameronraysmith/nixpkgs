@@ -115,8 +115,6 @@ buildPythonPackage rec {
   enabledTestPaths = if stdenv.hostPlatform.isDarwin then [ "tests/fast" ] else [ "tests" ];
 
   disabledTestPaths = [
-    # avoid dependency on mypy
-    "tests/stubs/test_stubs.py"
     # avoid dependency on pyotp
     "tests/fast/test_pypi_cleanup.py"
     # avoid test data download requiring network access
