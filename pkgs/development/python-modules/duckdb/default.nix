@@ -93,8 +93,11 @@ buildPythonPackage rec {
     # default to disabled extension autoload/autoinstall
     CMAKE_DEFINE_DUCKDB_EXTENSION_AUTOLOAD_DEFAULT = "0";
     CMAKE_DEFINE_DUCKDB_EXTENSION_AUTOINSTALL_DEFAULT = "0";
-    OVERRIDE_GIT_DESCRIBE = "v${version}-0-g${duckdb.rev}";
   };
+
+  cmakeFlags = [
+    (lib.cmakeFeature "OVERRIDE_GIT_DESCRIBE" "v${version}-0-g${duckdb.rev}")
+  ];
 
   nativeCheckInputs = [
     fsspec
