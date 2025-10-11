@@ -33,7 +33,7 @@ buildPythonPackage rec {
     owner = "duckdb";
     repo = "duckdb-python";
     tag = "v${version}";
-    hash = "sha256-JovTykaAUGY07LFXRbVwlYR8kfgV/0RHhcplmM+k10U=";
+    hash = "sha256-cZyiTqu5iW/cqEo42b/XnOG7hJqtQs1h2RXXL392ujA=";
   };
 
   postPatch = ''
