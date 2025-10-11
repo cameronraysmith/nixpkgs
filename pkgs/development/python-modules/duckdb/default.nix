@@ -39,8 +39,8 @@ buildPythonPackage rec {
   postPatch = ''
     # patch cmake to ignore absence of git submodule copy of duckdb
     substituteInPlace cmake/duckdb_loader.cmake \
-      --replace-fail '_duckdb_set_default(DUCKDB_SOURCE_PATH "''${CMAKE_CURRENT_SOURCE_DIR}/external/duckdb")' \
-                     '_duckdb_set_default(DUCKDB_SOURCE_PATH "${duckdb.src}")'
+      --replace-fail '"''${CMAKE_CURRENT_SOURCE_DIR}/external/duckdb"' \
+                     '"${duckdb.src}"'
 
     # replace pybind11[global] with pybind11
     substituteInPlace pyproject.toml \
