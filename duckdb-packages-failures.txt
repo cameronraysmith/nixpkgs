@@ -1,10 +1,8 @@
 piper-tts
 python312Packages.llama-index-node-parser-docling
 python312Packages.llama-index-readers-docling
-python312Packages.narwhals
 python312Packages.smolagents
 python313Packages.llama-index-node-parser-docling
 python313Packages.llama-index-readers-docling
-python313Packages.narwhals
 python313Packages.smolagents
 wyoming-piper

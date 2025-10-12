@@ -118,6 +118,7 @@ python312Packages.marimo
 python312Packages.meshtastic
 python312Packages.mlcroissant
 python312Packages.msticpy
+python312Packages.narwhals
 python312Packages.nbsmoke
 python312Packages.neurokit2
 python312Packages.niaarm
@@ -263,6 +264,7 @@ python313Packages.llama-parse
 python313Packages.meshtastic
 python313Packages.mlcroissant
 python313Packages.msticpy
+python313Packages.narwhals
 python313Packages.nbsmoke
 python313Packages.neurokit2
 python313Packages.niaarm
