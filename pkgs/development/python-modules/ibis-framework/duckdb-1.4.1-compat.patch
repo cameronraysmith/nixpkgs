@@ -1,18 +1,22 @@
 From f9f23635fb2eea6bc7bc8e2b3b667033c1b20aed Mon Sep 17 00:00:00 2001
 From: Alessandro Molina <alessandro.molina@posit.co>
 Date: Tue, 7 Oct 2025 16:18:40 +0200
-Subject: [PATCH] fix(duckdb): support duckdb 1.4.1
+Subject: [PATCH] fix(duckdb): support duckdb 1.4.0 and 1.4.1
 
-duckdb 1.4.1 deprecated duckdb.functional in favor of duckdb.func.
-This patch adds a fallback to support both old and new duckdb versions.
+This patch includes two fixes for duckdb 1.4.x compatibility:
 
-Backported from upstream commit f9f23635fb2eea6bc7bc8e2b3b667033c1b20aed
+1. duckdb 1.4.0 changed .arrow() return type from pyarrow.Table to
+   RecordBatchReader, requiring use of .to_arrow_table() instead
+   (backported from upstream commit aacf0724331b937160f848eb5c75e79ddea8b769)
+
+2. duckdb 1.4.1 deprecated duckdb.functional in favor of duckdb.func
+   (backported from upstream commit f9f23635fb2eea6bc7bc8e2b3b667033c1b20aed)
 ---
- ibis/backends/duckdb/__init__.py | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ ibis/backends/duckdb/__init__.py | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/ibis/backends/duckdb/__init__.py b/ibis/backends/duckdb/__init__.py
-index 91aa8ced2..d1c6e8cb0 100644
+index 739fdf259..d1c6e8cb0 100644
 --- a/ibis/backends/duckdb/__init__.py
 +++ b/ibis/backends/duckdb/__init__.py
 @@ -49,9 +49,15 @@ if TYPE_CHECKING:
@@ -33,5 +37,23 @@ index 91aa8ced2..d1c6e8cb0 100644
  }
 
 
+@@ -1382,7 +1388,7 @@ class Backend(
+
+         table = self._to_duckdb_relation(
+             expr, params=params, limit=limit, **kwargs
+-        ).arrow()
++        ).to_arrow_table()
+         return expr.__pyarrow_result__(table, data_mapper=DuckDBPyArrowData)
+
+     def execute(
+@@ -1402,7 +1408,7 @@ class Backend(
+         from ibis.backends.duckdb.converter import DuckDBPandasData
+
+         rel = self._to_duckdb_relation(expr, params=params, limit=limit, **kwargs)
+-        table = rel.arrow()
++        table = rel.to_arrow_table()
+
+         df = pd.DataFrame(
+             {
 --
 2.47.0
