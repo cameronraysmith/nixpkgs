@@ -108,6 +108,12 @@ buildPythonPackage rec {
     hash = "sha256-Uuqm9Exu/oK3BGBL4ViUOGArMWhVutUn1gFRj1I4vt4=";
   };
 
+  patches = [
+    # backport fix for duckdb 1.4.1 compatibility
+    # https://github.com/ibis-project/ibis/commit/f9f23635fb2eea6bc7bc8e2b3b667033c1b20aed
+    ./duckdb-1.4.1-compat.patch
+  ];
+
   build-system = [
     hatchling
   ];
