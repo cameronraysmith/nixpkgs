@@ -51,7 +51,7 @@ main() {
     system="$(detect_system)"
     echo "Detected system: ${system}" >&2
 
-    # Verify required files exist
+    # Verify required source files exist
     if [[ ! -f "${script_dir}/duckdb-packages-list.txt" ]]; then
         echo "Error: duckdb-packages-list.txt not found in ${script_dir}" >&2
         exit 1
@@ -62,17 +62,27 @@ main() {
         exit 1
     fi
 
-    # Build package arguments arrays to avoid shellcheck SC2046
+    # Auto-regenerate filtered list if sources are newer or if it doesn't exist
+    local filtered_file="${script_dir}/duckdb-packages-filtered.txt"
+    local list_file="${script_dir}/duckdb-packages-list.txt"
+    local failures_file="${script_dir}/duckdb-packages-failures.txt"
+
+    if [[ ! -f "${filtered_file}" ]] || \
+       [[ "${list_file}" -nt "${filtered_file}" ]] || \
+       [[ "${failures_file}" -nt "${filtered_file}" ]]; then
+        echo "Regenerating ${filtered_file}..." >&2
+        comm -23 <(sort "${list_file}") <(sort "${failures_file}") > "${filtered_file}"
+        echo "Generated $(wc -l < "${filtered_file}") filtered packages" >&2
+    fi
+
+    # Build package arguments array to avoid shellcheck SC2046
+    # Note: -P exclusions don't work with -p inclusions due to nixpkgs-review bug
+    # (early return bypasses filter_packages), so we use pre-filtered list
     local -a pkg_args=()
-    local -a skip_args=()
 
     while IFS= read -r pkg; do
         pkg_args+=("-p" "${pkg}")
-    done < "${script_dir}/duckdb-packages-list.txt"
-
-    while IFS= read -r pkg; do
-        skip_args+=("-P" "${pkg}")
-    done < "${script_dir}/duckdb-packages-failures.txt"
+    done < "${script_dir}/duckdb-packages-filtered.txt"
 
     # Run nixpkgs-review with detected system
     nixpkgs-review rev duckdb-132-140 \
@@ -81,7 +91,6 @@ main() {
         --num-parallel-evals 12 \
         --build-args "--max-jobs 8 --cores 2" \
         "${pkg_args[@]}" \
-        "${skip_args[@]}" \
         --print-result \
         --no-shell
 }
