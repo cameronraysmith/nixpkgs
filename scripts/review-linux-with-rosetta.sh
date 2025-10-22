@@ -63,7 +63,6 @@ sops exec-env secrets/shared.yaml "
             --num-parallel-evals 12 \
             --build-args '--max-jobs 12 --cores 12 --keep-going' \
             $(awk '{print "-p", $0}' "$PACKAGE_LIST") \
-            --print-result \
             --no-shell
 "
 
