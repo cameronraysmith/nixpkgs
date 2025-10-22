@@ -20,8 +20,8 @@ fi
 FIRST_PKG=$(head -1 "$PACKAGE_LIST")
 echo "Verifying package order (first package: $FIRST_PKG)..."
 
-# Create orchestration directory
-ORCH_DIR="orchestrated-review-$(date +%Y%m%d-%H%M%S)"
+# Create orchestration directory (use absolute path)
+ORCH_DIR="$(pwd)/orchestrated-review-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$ORCH_DIR"/{batches,logs,reports}
 
 # Copy ordered list for traceability
