@@ -125,6 +125,12 @@ for batch in "$ORCH_DIR"/batches/batch-*.txt; do
 
     BATCH_START=$(date +%s)
 
+    # Build package arguments from batch file
+    PACKAGE_ARGS=""
+    while IFS= read -r pkg; do
+        PACKAGE_ARGS="$PACKAGE_ARGS -p $pkg"
+    done < "$batch"
+
     # Run nixpkgs-review for this batch
     cd ~/projects/nix-workspace/nix-config && \
     if sops exec-env secrets/shared.yaml "
@@ -135,7 +141,7 @@ for batch in "$ORCH_DIR"/batches/batch-*.txt; do
                 --systems aarch64-linux \
                 --num-parallel-evals 12 \
                 --build-args '--max-jobs 12 --cores 12 --keep-going' \
-                $(awk '{print "-p", $0}' "$batch") \
+                $PACKAGE_ARGS \
                 --no-shell 2>&1 | tee $ORCH_DIR/logs/$batch_name.log
     "; then
         ((SUCCESS_COUNT++))
