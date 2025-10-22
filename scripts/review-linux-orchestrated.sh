@@ -80,22 +80,24 @@ BATCH_COUNT=${#BATCH_FILES[@]}
 echo "✓ Created $BATCH_COUNT batches"
 echo ""
 
-# Verify builder
-echo "Verifying nix-rosetta-builder..."
-if ! nix show-config | grep -q "linux-builder.*ssh://"; then
-    echo "❌ nix-rosetta-builder not configured"
+# Verify builder (on-demand mode - will start when needed)
+echo "Verifying nix-rosetta-builder configuration..."
+
+# Check if SSH config exists for builder
+if ! grep -q "Host linux-builder" ~/.ssh/config 2>/dev/null; then
+    echo "❌ nix-rosetta-builder not configured in ~/.ssh/config"
+    echo "   Run 'just activate' in ~/projects/nix-workspace/nix-config"
     exit 1
 fi
 
-if ! nix store ping --store ssh-ng://builder@linux-builder &>/dev/null; then
-    echo "⚠️  Builder not responding, attempting to start..."
-    sleep 10
-    if ! nix store ping --store ssh-ng://builder@linux-builder &>/dev/null; then
-        echo "❌ Cannot connect to builder"
-        exit 1
-    fi
+# Check if builder is in nix builders list
+if ! nix show-config 2>/dev/null | grep -q "builders.*linux-builder"; then
+    echo "❌ nix-rosetta-builder not in builders list"
+    echo "   Run 'just activate' in ~/projects/nix-workspace/nix-config"
+    exit 1
 fi
-echo "✓ Builder ready"
+
+echo "✓ Builder configured (on-demand mode - will start when first build is dispatched)"
 echo ""
 
 # Track progress
