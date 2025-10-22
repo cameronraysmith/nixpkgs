@@ -52,6 +52,12 @@ echo ""
 echo "Estimated time: 30-90 minutes for 340 packages"
 echo ""
 
+# Build package arguments from package list
+PACKAGE_ARGS=""
+while IFS= read -r pkg; do
+    PACKAGE_ARGS="$PACKAGE_ARGS -p $pkg"
+done < "$PACKAGE_LIST"
+
 # Run nixpkgs-review with cachix watch-exec to push artifacts as they're built
 cd ~/projects/nix-workspace/nix-config && \
 sops exec-env secrets/shared.yaml "
@@ -62,7 +68,7 @@ sops exec-env secrets/shared.yaml "
             --systems aarch64-linux \
             --num-parallel-evals 12 \
             --build-args '--max-jobs 12 --cores 12 --keep-going' \
-            $(awk '{print "-p", $0}' "$PACKAGE_LIST") \
+            $PACKAGE_ARGS \
             --no-shell
 "
 
