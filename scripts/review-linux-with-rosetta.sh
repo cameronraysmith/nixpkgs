@@ -4,10 +4,11 @@ set -euo pipefail
 
 BRANCH="${1:-duckdb-132-140}"
 BASE_BRANCH="${2:-master}"
-PACKAGE_LIST="${3:-duckdb-packages-list.txt}"
+PACKAGE_LIST="${3:-}"  # Optional: if empty/auto, let nixpkgs-review auto-detect
 SKIP_PACKAGES="${4:-}"  # Optional: comma-separated list of packages to skip
 
-if [ ! -f "$PACKAGE_LIST" ]; then
+# Validate package list if provided
+if [ -n "$PACKAGE_LIST" ] && [ "$PACKAGE_LIST" != "auto" ] && [ ! -f "$PACKAGE_LIST" ]; then
     echo "Error: Package list not found: $PACKAGE_LIST"
     exit 1
 fi
@@ -17,7 +18,11 @@ echo "nixpkgs-review for aarch64-linux via nix-rosetta-builder"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Branch: $BRANCH"
 echo "Base: $BASE_BRANCH"
-echo "Packages: $(wc -l < "$PACKAGE_LIST")"
+if [ -n "$PACKAGE_LIST" ] && [ "$PACKAGE_LIST" != "auto" ]; then
+    echo "Packages: $(grep -cv '^[[:space:]]*\(#\|$\)' "$PACKAGE_LIST") (from $PACKAGE_LIST)"
+else
+    echo "Packages: auto-detect (all changed packages)"
+fi
 echo ""
 
 # Get cachix cache name from nix-config
@@ -55,11 +60,13 @@ echo ""
 
 # Build package arguments from package list (skip comments and empty lines)
 PACKAGE_ARGS=""
-while IFS= read -r pkg; do
-    # Skip comments and empty lines
-    [[ -z "$pkg" || "$pkg" =~ ^[[:space:]]*# ]] && continue
-    PACKAGE_ARGS="$PACKAGE_ARGS -p $pkg"
-done < "$PACKAGE_LIST"
+if [ -n "$PACKAGE_LIST" ] && [ "$PACKAGE_LIST" != "auto" ]; then
+    while IFS= read -r pkg; do
+        # Skip comments and empty lines
+        [[ -z "$pkg" || "$pkg" =~ ^[[:space:]]*# ]] && continue
+        PACKAGE_ARGS="$PACKAGE_ARGS -p $pkg"
+    done < "$PACKAGE_LIST"
+fi
 
 # Add skip package arguments if specified
 SKIP_ARGS=""
