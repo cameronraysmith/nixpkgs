@@ -5,6 +5,7 @@ set -euo pipefail
 BRANCH="${1:-duckdb-132-140}"
 BASE_BRANCH="${2:-master}"
 PACKAGE_LIST="${3:-duckdb-packages-list.txt}"
+SKIP_PACKAGES="${4:-}"  # Optional: comma-separated list of packages to skip
 
 if [ ! -f "$PACKAGE_LIST" ]; then
     echo "Error: Package list not found: $PACKAGE_LIST"
@@ -52,11 +53,22 @@ echo ""
 echo "Estimated time: 30-90 minutes for 340 packages"
 echo ""
 
-# Build package arguments from package list
+# Build package arguments from package list (skip comments and empty lines)
 PACKAGE_ARGS=""
 while IFS= read -r pkg; do
+    # Skip comments and empty lines
+    [[ -z "$pkg" || "$pkg" =~ ^[[:space:]]*# ]] && continue
     PACKAGE_ARGS="$PACKAGE_ARGS -p $pkg"
 done < "$PACKAGE_LIST"
+
+# Add skip package arguments if specified
+SKIP_ARGS=""
+if [ -n "$SKIP_PACKAGES" ]; then
+    IFS=',' read -ra SKIP_ARRAY <<< "$SKIP_PACKAGES"
+    for skip_pkg in "${SKIP_ARRAY[@]}"; do
+        SKIP_ARGS="$SKIP_ARGS -P $skip_pkg"
+    done
+fi
 
 # Run nixpkgs-review with cachix watch-exec to push artifacts as they're built
 cd ~/projects/nix-workspace/nix-config && \
@@ -69,6 +81,7 @@ sops exec-env secrets/shared.yaml "
             --num-parallel-evals 12 \
             --build-args '--max-jobs 12 --cores 12 --keep-going' \
             $PACKAGE_ARGS \
+            $SKIP_ARGS \
             --no-shell
 "
 
