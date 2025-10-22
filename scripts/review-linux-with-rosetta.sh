@@ -26,28 +26,24 @@ CACHE_NAME=$(cd ~/projects/nix-workspace/nix-config && \
 echo "Cache: https://app.cachix.org/cache/$CACHE_NAME"
 echo ""
 
-# Verify rosetta builder is configured
-echo "Checking nix-rosetta-builder status..."
-if ! nix show-config | grep -q "linux-builder.*ssh://"; then
-    echo "❌ nix-rosetta-builder not configured as a remote builder"
-    echo "   Run 'just activate' to rebuild your system with rosetta builder"
+# Verify rosetta builder is configured (on-demand mode)
+echo "Checking nix-rosetta-builder configuration..."
+
+# Check if SSH config exists for builder
+if ! grep -q "Host linux-builder" ~/.ssh/config 2>/dev/null; then
+    echo "❌ nix-rosetta-builder not configured in ~/.ssh/config"
+    echo "   Run 'just activate' in ~/projects/nix-workspace/nix-config"
     exit 1
 fi
 
-# Check if builder is accessible (will start on-demand VM)
-echo "Testing builder connectivity (may start VM if not running)..."
-if ! nix store ping --store ssh-ng://builder@linux-builder &>/dev/null; then
-    echo "⚠️  Builder not responding, attempting to start..."
-    # The VM should start automatically due to onDemand = true
-    sleep 10
-    if ! nix store ping --store ssh-ng://builder@linux-builder &>/dev/null; then
-        echo "❌ Cannot connect to builder"
-        echo "   Try: sudo launchctl kickstart -k system/org.nixos.linux-builder"
-        exit 1
-    fi
+# Check if builder is in nix builders list
+if ! nix show-config 2>/dev/null | grep -q "builders.*linux-builder"; then
+    echo "❌ nix-rosetta-builder not in builders list"
+    echo "   Run 'just activate' in ~/projects/nix-workspace/nix-config"
+    exit 1
 fi
 
-echo "✓ Builder connected and ready"
+echo "✓ Builder configured (on-demand mode - will start when first build is dispatched)"
 echo ""
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
