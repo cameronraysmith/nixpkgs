@@ -7,6 +7,7 @@ BRANCH="${1:-duckdb-132-140}"
 BASE_BRANCH="${2:-master}"
 PACKAGE_LIST="${3:-ordered-packages.txt}"
 BATCH_SIZE="${4:-50}"
+SKIP_PACKAGES="${5:-}"  # Optional: comma-separated list of packages to skip
 
 if [ ! -f "$PACKAGE_LIST" ]; then
     echo "Error: Package list not found: $PACKAGE_LIST"
@@ -125,11 +126,22 @@ for batch in "$ORCH_DIR"/batches/batch-*.txt; do
 
     BATCH_START=$(date +%s)
 
-    # Build package arguments from batch file
+    # Build package arguments from batch file (skip comments and empty lines)
     PACKAGE_ARGS=""
     while IFS= read -r pkg; do
+        # Skip comments and empty lines
+        [[ -z "$pkg" || "$pkg" =~ ^[[:space:]]*# ]] && continue
         PACKAGE_ARGS="$PACKAGE_ARGS -p $pkg"
     done < "$batch"
+
+    # Add skip package arguments if specified
+    SKIP_ARGS=""
+    if [ -n "$SKIP_PACKAGES" ]; then
+        IFS=',' read -ra SKIP_ARRAY <<< "$SKIP_PACKAGES"
+        for skip_pkg in "${SKIP_ARRAY[@]}"; do
+            SKIP_ARGS="$SKIP_ARGS -P $skip_pkg"
+        done
+    fi
 
     # Run nixpkgs-review for this batch
     cd ~/projects/nix-workspace/nix-config && \
@@ -142,6 +154,7 @@ for batch in "$ORCH_DIR"/batches/batch-*.txt; do
                 --num-parallel-evals 12 \
                 --build-args '--max-jobs 12 --cores 12 --keep-going' \
                 $PACKAGE_ARGS \
+                $SKIP_ARGS \
                 --no-shell 2>&1 | tee $ORCH_DIR/logs/$batch_name.log
     "; then
         ((SUCCESS_COUNT++))
