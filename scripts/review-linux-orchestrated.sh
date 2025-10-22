@@ -136,7 +136,6 @@ for batch in "$ORCH_DIR"/batches/batch-*.txt; do
                 --num-parallel-evals 12 \
                 --build-args '--max-jobs 12 --cores 12 --keep-going' \
                 $(awk '{print "-p", $0}' "$batch") \
-                --print-result \
                 --no-shell 2>&1 | tee $ORCH_DIR/logs/$batch_name.log
     "; then
         ((SUCCESS_COUNT++))
