@@ -83,21 +83,14 @@ echo ""
 # Verify builder (on-demand mode - will start when needed)
 echo "Verifying nix-rosetta-builder configuration..."
 
-# Check if SSH config exists for builder
-if ! grep -q "Host linux-builder" ~/.ssh/config 2>/dev/null; then
-    echo "❌ nix-rosetta-builder not configured in ~/.ssh/config"
+# Check if rosetta-builder is in /etc/nix/machines
+if [ -f /etc/nix/machines ] && grep -q "rosetta-builder.*aarch64-linux" /etc/nix/machines; then
+    echo "✓ Builder configured (on-demand mode - will start when first build is dispatched)"
+else
+    echo "❌ nix-rosetta-builder not found in /etc/nix/machines"
     echo "   Run 'just activate' in ~/projects/nix-workspace/nix-config"
     exit 1
 fi
-
-# Check if builder is in nix builders list
-if ! nix show-config 2>/dev/null | grep -q "builders.*linux-builder"; then
-    echo "❌ nix-rosetta-builder not in builders list"
-    echo "   Run 'just activate' in ~/projects/nix-workspace/nix-config"
-    exit 1
-fi
-
-echo "✓ Builder configured (on-demand mode - will start when first build is dispatched)"
 echo ""
 
 # Track progress
