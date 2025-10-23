@@ -237,17 +237,26 @@ while IFS= read -r pkg; do
     SKIP_ARGS="$SKIP_ARGS -P $pkg"
 done < "$EXCLUSIONS_FILE"
 
+# Debug: show what we built
+echo "DEBUG: SKIP_ARGS has $(echo "$SKIP_ARGS" | wc -w | tr -d ' ') words"
+echo "DEBUG: First 10 flags: $(echo "$SKIP_ARGS" | cut -d' ' -f1-20)"
+echo ""
+
 # Run nixpkgs-review with cachix watch-exec to push artifacts as they're built
+# Note: $SKIP_ARGS is expanded by outer shell before passing to sops
 # shellcheck disable=SC2086
-cd ~/projects/nixpkgs && \
-cachix watch-exec "$CACHE_NAME" --jobs 12 -- \
-    nixpkgs-review rev "$BRANCH" \
-        --branch "$BASE_BRANCH" \
-        --systems aarch64-darwin \
-        --num-parallel-evals 12 \
-        --build-args '--max-jobs 12 --cores 12 --keep-going' \
-        $SKIP_ARGS \
-        --no-shell
+cd ~/projects/nix-workspace/nix-config && \
+sops exec-env secrets/shared.yaml "
+    cd ~/projects/nixpkgs && \
+    cachix watch-exec \$CACHIX_CACHE_NAME --jobs 12 -- \
+        nixpkgs-review rev $BRANCH \
+            --branch $BASE_BRANCH \
+            --systems aarch64-darwin \
+            --num-parallel-evals 12 \
+            --build-args '--max-jobs 12 --cores 12 --keep-going' \
+            $SKIP_ARGS \
+            --no-shell
+"
 
 EXIT_CODE=$?
 
