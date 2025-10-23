@@ -23,7 +23,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "Starting nixpkgs-review with cachix watch-exec"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "Excluding 192 packages (sbcl dependencies + manual exclusions)"
+echo "Excluding 193 packages (sbcl dependencies + manual exclusions)"
 echo ""
 
 cd ~/projects/nix-workspace/nix-config && \
@@ -221,6 +221,7 @@ sops exec-env secrets/shared.yaml "
             -P python313Packages.torchcrepe \
             -P python313Packages.textacy \
             -P python313Packages.wandb \
+            -P python313Packages.whisperx \
             -P sbclPackages.duckdb \
             -P theharvester \
             -P quark-engine \
