@@ -12,10 +12,15 @@ echo "Branch: $BRANCH"
 echo "Base: $BASE_BRANCH"
 echo ""
 
-# Get cachix cache name from nix-config
+# Get cachix credentials from nix-config secrets
 # shellcheck disable=SC2016
 CACHE_NAME=$(cd ~/projects/nix-workspace/nix-config && \
     sops exec-env secrets/shared.yaml 'echo $CACHIX_CACHE_NAME')
+# shellcheck disable=SC2016
+CACHIX_AUTH_TOKEN=$(cd ~/projects/nix-workspace/nix-config && \
+    sops exec-env secrets/shared.yaml 'echo $CACHIX_AUTH_TOKEN')
+export CACHIX_AUTH_TOKEN
+
 echo "Cache: https://app.cachix.org/cache/$CACHE_NAME"
 echo ""
 
@@ -243,20 +248,18 @@ echo "DEBUG: First 10 flags: $(echo "$SKIP_ARGS" | cut -d' ' -f1-20)"
 echo ""
 
 # Run nixpkgs-review with cachix watch-exec to push artifacts as they're built
-# Note: $SKIP_ARGS is expanded by outer shell before passing to sops
+# CACHIX_AUTH_TOKEN is exported above, so cachix has authentication
+# $SKIP_ARGS must NOT be quoted so it expands to separate words
 # shellcheck disable=SC2086
-cd ~/projects/nix-workspace/nix-config && \
-sops exec-env secrets/shared.yaml "
-    cd ~/projects/nixpkgs && \
-    cachix watch-exec \$CACHIX_CACHE_NAME --jobs 12 -- \
-        nixpkgs-review rev $BRANCH \
-            --branch $BASE_BRANCH \
-            --systems aarch64-darwin \
-            --num-parallel-evals 12 \
-            --build-args '--max-jobs 12 --cores 12 --keep-going' \
-            $SKIP_ARGS \
-            --no-shell
-"
+cd ~/projects/nixpkgs && \
+cachix watch-exec "$CACHE_NAME" --jobs 12 -- \
+    nixpkgs-review rev "$BRANCH" \
+        --branch "$BASE_BRANCH" \
+        --systems aarch64-darwin \
+        --num-parallel-evals 12 \
+        --build-args '--max-jobs 12 --cores 12 --keep-going' \
+        $SKIP_ARGS \
+        --no-shell
 
 EXIT_CODE=$?
 
