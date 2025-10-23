@@ -23,7 +23,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "Starting nixpkgs-review with cachix watch-exec"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "Excluding 187 packages (sbcl dependencies + manual exclusions)"
+echo "Excluding 192 packages (sbcl dependencies + manual exclusions)"
 echo ""
 
 cd ~/projects/nix-workspace/nix-config && \
@@ -56,6 +56,11 @@ sops exec-env secrets/shared.yaml "
             -P aider-chat-full \
             -P piper-tts \
             -P prowler \
+            -P coqui-tts \
+            -P python312Packages.scikit-tda \
+            -P python312Packages.k-diffusion \
+            -P python313Packages.scikit-tda \
+            -P python313Packages.k-diffusion \
             -P python312Packages.ax-platform \
             -P python312Packages.beets \
             -P python312Packages.beetcamp \
