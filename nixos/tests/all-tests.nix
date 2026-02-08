@@ -1095,6 +1095,9 @@ in
   nix-ld = runTest ./nix-ld.nix;
   nix-misc = handleTest ./nix/misc.nix { };
   nix-required-mounts = runTest ./nix-required-mounts;
+  nix-required-mounts-eval = pkgs.callPackage ./nix-required-mounts/eval-nvidia-gpu-preset.nix {
+    inherit evalSystem;
+  };
   nix-serve = runTest ./nix-serve.nix;
   nix-serve-ssh = runTest ./nix-serve-ssh.nix;
   nix-store-veritysetup = runTest ./nix-store-veritysetup.nix;

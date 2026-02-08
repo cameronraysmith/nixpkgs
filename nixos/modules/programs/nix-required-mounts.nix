@@ -50,7 +50,7 @@ let
     # opengl:
     # NOTE: Since driverLink is just a symlink, we need to include its target as well.
     pkgs.addDriverRunpath.driverLink
-    config.systemd.tmpfiles.settings.graphics-driver."/run/opengl-driver"."L+".argument
+    config.hardware.graphics.driverSearchPath
 
     # mesa:
     config.hardware.graphics.package

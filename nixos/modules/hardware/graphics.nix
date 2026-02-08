@@ -116,6 +116,12 @@ in
       default = [ ];
       example = lib.literalExpression "with pkgs.pkgsi686Linux; [ intel-media-driver intel-vaapi-driver ]";
     };
+
+    driverSearchPath = lib.mkOption {
+      type = lib.types.package;
+      internal = true;
+      description = "Combined driver search path package, a `buildEnv` of `package` and `extraPackages`.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -130,8 +136,10 @@ in
       }
     ];
 
+    hardware.graphics.driverSearchPath = driversEnv;
+
     systemd.tmpfiles.settings.graphics-driver = {
-      "/run/opengl-driver"."L+".argument = toString driversEnv;
+      "/run/opengl-driver"."L+".argument = toString cfg.driverSearchPath;
       "/run/opengl-driver-32" =
         if pkgs.stdenv.hostPlatform.isi686 then
           { "L+".argument = "opengl-driver"; }
